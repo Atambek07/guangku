@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace "com.guangku.plotter"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.guangku.plotter"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        // USB Host permission — нужно для работы с плоттером через OTG
+        // Запрос прав на USB устройство обрабатывается в коде
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    // Разрешаем доступ к resources из assets
+    aaptOptions {
+        noCompress "svg", "html", "js", "css"
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // USB Serial для связи с плоттером через OTG (GRBL)
+    implementation 'com.github.mik3y:usb-serial-for-android:4.3'
+
+    // Встроенный веб-сервер на телефоне (отдаёт тот же HTML/JS интерфейс)
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'org.nanohttpd:nanohttpd-websocket:2.3.1'
+}

@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Графдзеркало (телефон)</string>
+    <string name="status_disconnected">Отключено</string>
+    <string name="status_connecting">Подключение…</string>
+    <string name="status_connected">Подключено к плоттеру</string>
+    <string name="btn_connect">Подключить плоттер (USB)</string>
+    <string name="btn_disconnect">Отключить</string>
+    <string name="btn_open_web">Открыть интерфейс (127.0.0.1:8000)</string>
+    <string name="usb_permission">Нужен доступ к USB-устройству (плоттер)</string>
+    <string name="web_not_ready">Веб-сервер запускается… подождите несколько секунд</string>
+</resources>

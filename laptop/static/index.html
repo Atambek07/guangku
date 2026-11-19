@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Графдзеркало — робот-плоттер</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<header class="app-header">
+  <div class="header-content">
+    <div class="logo">
+      <div class="logo-mark">🖋️</div>
+      <div class="logo-text">
+        <div class="logo-main">Графдзеркало</div>
+        <div class="logo-sub">Робот-плоттер • конспект • чертеж</div>
+      </div>
+    </div>
+    <div class="status-chip" id="chip-connection">
+      <span class="status-dot"></span>
+      <span class="status-text">Отключено</span>
+    </div>
+  </div>
+</header>
+
+<!-- ========== MAIN NAVIGATION (bottom, mobile-app style) ========== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-tab="write">
+    <span class="nav-icon">📝</span>
+    <span class="nav-label">Конспект</span>
+  </button>
+  <button class="nav-item" data-tab="draw">
+    <span class="nav-icon">✏️</span>
+    <span class="nav-label">Чертеж</span>
+  </button>
+  <button class="nav-item" data-tab="control">
+    <span class="nav-icon">🕹️</span>
+    <span class="nav-label">Управление</span>
+  </button>
+  <button class="nav-item" data-tab="preview">
+    <span class="nav-icon">👁️</span>
+    <span class="nav-label">Предпросмотр</span>
+  </button>
+  <button class="nav-item" data-tab="settings">
+    <span class="nav-icon">⚙️</span>
+    <span class="nav-label">Настройки</span>
+  </button>
+</nav>
+
+<!-- ========== CONTAINER ========== -->
+<div class="container">
+
+  <!-- ========== TAB: КОНСПЕКТ ========== -->
+  <section class="tab-panel active" id="panel-write">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Конспект в тетрадь</h2>
+        <p class="card-sub">Русский текст → рукописный шрифт → клетка/линейка</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Текст конспекта</label>
+        <textarea id="txt-content" placeholder="Вставьте сюда текст конспекта на русском языке…할 수 있는どんな長さでもOK"></textarea>
+        <div class="text-counter" id="text-counter">0 символов</div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Носитель / разметка</label>
+            <select id="sel-preset"></select>
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Шрифт (из ./fonts/)</label>
+            <select id="sel-font"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Размер шрифта (мм)</label>
+            <input type="number" id="in-font-size" value="8" step="0.5">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Межстрочный интервал (мм)</label>
+            <input type="number" id="in-line-height" value="14" step="0.5">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Интервал букв (мм)</label>
+            <input type="number" id="in-tracking" value="1" step="0.1">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Наклон (°)</label>
+            <input type="number" id="in-slant" value="0" step="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Поле слева (мм)</label>
+            <input type="number" id="in-ml" value="10" step="1">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Поле справа (мм)</label>
+            <input type="number" id="in-mr" value="10" step="1">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Поле сверху (мм)</label>
+            <input type="number" id="in-mt" value="12" step="1">
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+            <label class="form-label">Поле снизу (мм)</label>
+            <input type="number" id="in-mb" value="12" step="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btn-layout">Разместить страницы</button>
+        <button class="btn btn-outline" id="btn-gcode">Сформировать G-code</button>
+        <button class="btn btn-success" id="btn-send">Отправить на станок</button>
+      </div>
+
+      <div class="result-box" id="result-box" style="display:none;">
+        <div class="result-title">📊 Готово к печати</div>
+        <div class="result-stats">
+          <div class="stat">
+            <div class="stat-value" id="stat-pages">—</div>
+            <div class="stat-label">страниц</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-chars">—</div>
+            <div class="stat-label">символов</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-strokes">—</div>
+            <div class="stat-label">штрихов</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-time">—</div>
+            <div class="stat-label">примерно мин</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint" id="hint-layout"></div>
+    </div>
+  </section>
+
+  <!-- ========== TAB: ЧЕРТЕЖ A4 ========== -->
+  <section class="tab-panel" id="panel-draw">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Чертеж на A4</h2>
+        <p class="card-sub">Загрузите .svg → масштабирование под 210×297 мм → печать</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Файл чертежа (.svg)</label>
+        <div class="file-drop" id="file-drop">
+          <div class="file-icon">📁</div>
+          <div class="file-text">
+            <strong>Перетащите файл сюда</strong> или нажмите для выбора
+          </div>
+          <div class="file-hint">Поддерживается только .svg</div>
+          <input type="file" id="file-svg" accept=".svg" class="file-input">
+        </div>
+        <div class="file-info" id="file-info" style="display:none;"></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btn-svg-preview">Предпросмотр SVG</button>
+        <button class="btn btn-outline" id="btn-svg-gcode">G-code из SVG</button>
+        <button class="btn btn-success" id="btn-svg-send">Отправить на станок</button>
+      </div>
+
+      <div class="hint" id="hint-svg"></div>
+    </div>
+  </section>
+
+  <!-- ========== TAB: УПРАВЛЕНИЕ ========== -->
+  <section class="tab-panel" id="panel-control">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Управление станком</h2>
+        <p class="card-sub">Подключение, команды, ручное перемещение, тест ручки</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">USB-порт</label>
+        <div class="row">
+          <div class="col"><select id="sel-port"></select></div>
+          <div class="col"><select id="sel-baud"><option>115200</option><option>57600</option><option>9600</option></select></div>
+          <div class="col btn-col-compact">
+            <button class="btn btn-outline btn-sm" id="btn-refresh-ports">↻</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar" id="status-bar">
+        <span class="status-indicator"></span>
+        <span class="status-text">Статус: отключено</span>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btn-connect">Подключить</button>
+        <button class="btn btn-outline" id="btn-disconnect">Отключить</button>
+      </div>
+
+      <div class="grid-actions">
+        <button class="btn action-btn" id="btn-home">🏠 Домой</button>
+        <button class="btn action-btn" id="btn-zero">⎔ Нуль</button>
+        <button class="btn action-btn warn" id="btn-pause">⏸ Пауза</button>
+        <button class="btn action-btn" id="btn-resume">▶ Возобновить</button>
+        <button class="btn action-btn danger" id="btn-stop">⏹ Стоп</button>
+        <button class="btn action-btn" id="btn-pen-down">✒ Ручка вниз</button>
+        <button class="btn action-btn" id="btn-pen-up">✕ Ручка вверх</button>
+      </div>
+
+      <div class="card mt-2">
+        <div class="card-header">
+          <h3 class="card-title">Ручное перемещение</h3>
+        </div>
+        <div class="jog-pad">
+          <div class="jog-row">
+            <button class="btn jog-btn" id="jog-y-plus">Y +</button>
+          </div>
+          <div class="jog-row">
+            <button class="btn jog-btn" id="jog-x-minus">X −</button>
+            <div class="jog-step">
+              <label class="form-label">Шаг (мм)</label>
+              <input type="number" id="in-jog" value="10" step="1">
+            </div>
+            <button class="btn jog-btn" id="jog-x-plus">X +</button>
+          </div>
+          <div class="jog-row">
+            <button class="btn jog-btn" id="jog-y-minus">Y −</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TAB: ПРЕДПРОСМОТР ========== -->
+  <section class="tab-panel" id="panel-preview">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Предпросмотр траектории</h2>
+        <p class="card-sub">Посмотрите, как ляжет текст или чертеж перед печатью</p>
+      </div>
+
+      <div class="toolbar mb-2">
+        <button class="btn btn-outline" id="btn-refresh-preview">Обновить</button>
+        <span class="badge" id="badge-pages">Страниц: —</span>
+        <span class="badge" id="badge-est">Время: —</span>
+      </div>
+
+      <div class="preview-area" id="preview-area">
+        <div class="preview-empty">Нет данных для отображения</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TAB: НАСТРОЙКИ ========== -->
+  <section class="tab-panel" id="panel-settings">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Настройки и шрифты</h2>
+        <p class="card-sub">Папка ./fonts/, конфиг станка, информация о системе</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Найденные шрифты</label>
+        <div id="fonts-list" class="fonts-list"></div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label class="form-label">config.yaml (конфиг станка)</label>
+        <pre id="cfg-view">Загрузка…</pre>
+      </div>
+
+      <div class="toolbar mt-2">
+        <button class="btn btn-outline" id="btn-reload-config">Перечитать конфиг</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

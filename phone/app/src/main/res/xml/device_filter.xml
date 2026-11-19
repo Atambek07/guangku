@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Фильтр USB-устройств для плоттера (GRBL через CH340/CP2102/Arduino) -->
+    <!-- vendorId и productId можно уточнить под свой чип, но оставим пустыми — примем любое USB-Seial -->
+    <usb-filter />
+</resources>
